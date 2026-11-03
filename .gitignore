@@ -1,2 +1,5 @@
 build/
+.build/
+Packages/BorderBeamKit/.build/
 .DS_Store
+generated-images/

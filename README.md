@@ -7,10 +7,10 @@
 **Shut down your Mac in one click, even when apps keep asking "Are you sure?"**
 
 [![Release](https://img.shields.io/github/v/release/ZephyrDeng/one-shutdown?style=flat-square&color=e8264d)](https://github.com/ZephyrDeng/one-shutdown/releases/latest)
-[![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black?style=flat-square&logo=apple)](#install)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?style=flat-square&logo=apple)](#install)
 [![Universal](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-555?style=flat-square)](#install)
 [![Notarized](https://img.shields.io/badge/Apple-notarized-34c759?style=flat-square&logo=apple)](https://github.com/ZephyrDeng/one-shutdown/releases/latest)
-[![Swift](https://img.shields.io/badge/Swift-38%20lines-F05138?style=flat-square&logo=swift&logoColor=white)](Sources/main.swift)
+[![Swift](https://img.shields.io/badge/Swift-287%20lines-F05138?style=flat-square&logo=swift&logoColor=white)](Sources/main.swift)
 [![License: MIT](https://img.shields.io/github/license/ZephyrDeng/one-shutdown?style=flat-square)](LICENSE)
 
 English · [简体中文](README.zh-CN.md)
@@ -46,8 +46,13 @@ If you mostly put your Mac to sleep, or you rely on those *"Save changes?"* prom
 
 Click the <kbd>⏻</kbd> icon in the menu bar → **Shut Down Now**. That's it.
 
-1. Every regular app (anything with a Dock icon) is **force-quit**, so no app gets a chance to ask a question.
-2. One second later, macOS shuts down normally.
+1. AI agents still running (Claude, Codex, pi, devin, cursor-agent, …) get a **SIGTERM** first — they flush their session logs, so you can resume them next time instead of finding a truncated history.
+2. Every regular app (anything with a Dock icon) is **force-quit**, so no app gets a chance to ask a question.
+3. One second later, macOS shuts down normally.
+
+The status menu shows how many agent sessions are running before you commit. Once you confirm, a center-screen HUD tracks the shutdown live — each agent's graceful exit, then the apps being force-quit — ringed by a rotating [BorderBeam](https://github.com/xxvzzczxxl/border-beam) glow.
+
+<img src="assets/hud.png" alt="Shutdown HUD: waiting for pi and claude to exit, devin already exited, force-quitting Chrome and iTerm2" width="448">
 
 Finder, background services and menu-bar utilities are left alone and quit as part of the regular shutdown.
 
@@ -80,11 +85,11 @@ No Xcode project and no dependencies, just the `swiftc` that ships with the Comm
 ```bash
 git clone https://github.com/ZephyrDeng/one-shutdown.git
 cd one-shutdown
-./build.sh                 # → build/OneShutdown.app (universal, macOS 13+)
+./build.sh                 # → build/OneShutdown.app (universal, macOS 14+)
 open build/OneShutdown.app
 ```
 
-The whole app is [38 lines of Swift](Sources/main.swift). Read it before you run it.
+The app itself is [287 lines of Swift](Sources/main.swift); the beam animation comes from the vendored [BorderBeamKit](Packages/BorderBeamKit/) package (SwiftUI + Metal shaders). Read it before you run it.
 
 ## Ideas & contributing
 
@@ -93,6 +98,7 @@ Issues and PRs are welcome. Some directions people may want:
 - [ ] Global hotkey
 - [ ] Restart / Log Out variants
 - [ ] An "always spare these apps" list
+- [x] Wait for AI agent sessions to flush logs (v2.0)
 
 ## License
 

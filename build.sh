@@ -7,13 +7,23 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp assets/AppIcon.icns "$APP/Contents/Resources/"
 
-# 必须显式 -target:否则 swiftc 按工具链默认 minos(如 28.0)编译,低版本 macOS 报「不能与此版本 macOS 配合使用」
-# 版本需与 Info.plist 的 LSMinimumSystemVersion 保持一致;同时出 arm64 + x86_64 通用二进制
+# BorderBeamKit 编一次产出双 arch 的 .swiftmodule;静态库分别抽 arm64/x86_64 两份
+(cd Packages/BorderBeamKit && swift build -c release --arch arm64 && swift build -c release --arch x86_64)
+
+OUT=Packages/BorderBeamKit/.build/out
+BB=$OUT/Products/Release
+# beam-spec.json + default.metallib(Bundle.module 从这里读;两个 arch 内容一样)
+ditto "$BB/BorderBeamKit_BorderBeamKit.bundle" "$APP/Contents/Resources/BorderBeamKit_BorderBeamKit.bundle"
+
 for ARCH in arm64 x86_64; do
-  swiftc -O -target $ARCH-apple-macos13 Sources/main.swift -o build/OneShutdown-$ARCH
+  OBJ="$OUT/Intermediates.noindex/BorderBeamKit.build/Release/BorderBeamKit-t.build/Objects-normal/$ARCH"
+  ar rcs build/libBB-$ARCH.a "$OBJ"/*.o
+  swiftc -O -target $ARCH-apple-macos14 Sources/main.swift \
+    -I "$BB" build/libBB-$ARCH.a \
+    -o build/OneShutdown-$ARCH
 done
 lipo -create build/OneShutdown-arm64 build/OneShutdown-x86_64 -output "$APP/Contents/MacOS/OneShutdown"
-rm build/OneShutdown-arm64 build/OneShutdown-x86_64
+rm build/OneShutdown-arm64 build/OneShutdown-x86_64 build/libBB-*.a
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -25,10 +35,10 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
     <key>CFBundleIdentifier</key>        <string>com.zephyr.one-shutdown</string>
     <key>CFBundleExecutable</key>        <string>OneShutdown</string>
     <key>CFBundleIconFile</key>          <string>AppIcon</string>
-    <key>CFBundleShortVersionString</key><string>1.2.1</string>
-    <key>CFBundleVersion</key>           <string>4</string>
+    <key>CFBundleShortVersionString</key><string>2.0</string>
+    <key>CFBundleVersion</key>           <string>5</string>
     <key>CFBundlePackageType</key>       <string>APPL</string>
-    <key>LSMinimumSystemVersion</key>    <string>13.0</string>
+    <key>LSMinimumSystemVersion</key>    <string>14.0</string>
     <key>LSUIElement</key>               <true/>
 </dict>
 </plist>

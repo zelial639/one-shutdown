@@ -7,10 +7,10 @@
 **Mac 一键关机，就算 App 一直弹「确定要退出吗？」也照样关。**
 
 [![Release](https://img.shields.io/github/v/release/ZephyrDeng/one-shutdown?style=flat-square&color=e8264d)](https://github.com/ZephyrDeng/one-shutdown/releases/latest)
-[![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black?style=flat-square&logo=apple)](#安装)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?style=flat-square&logo=apple)](#安装)
 [![Universal](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-555?style=flat-square)](#安装)
 [![Notarized](https://img.shields.io/badge/Apple-notarized-34c759?style=flat-square&logo=apple)](https://github.com/ZephyrDeng/one-shutdown/releases/latest)
-[![Swift](https://img.shields.io/badge/Swift-38%20lines-F05138?style=flat-square&logo=swift&logoColor=white)](Sources/main.swift)
+[![Swift](https://img.shields.io/badge/Swift-287%20lines-F05138?style=flat-square&logo=swift&logoColor=white)](Sources/main.swift)
 [![License: MIT](https://img.shields.io/github/license/ZephyrDeng/one-shutdown?style=flat-square)](LICENSE)
 
 [English](README.md) · 简体中文
@@ -46,8 +46,13 @@
 
 点菜单栏 <kbd>⏻</kbd> → **立即关机**，就这样。
 
-1. **强制退出**所有普通 App（在 Dock 里有图标的那些），不给它们弹窗的机会。
-2. 1 秒后走系统正常关机流程。
+1. 还在运行的 AI agent（Claude、Codex、pi、devin、cursor-agent……）先收到 **SIGTERM** 正常退出——会话记录写完落盘，下次才能 resume，而不是留下半截历史。
+2. **强制退出**所有普通 App（在 Dock 里有图标的那些），不给它们弹窗的机会。
+3. 1 秒后走系统正常关机流程。
+
+菜单第一行会显示当前还有几个 agent 会话在跑。确认后屏幕中央会弹出 HUD 实时跟踪关机进度——每个 agent 的正常退出、逐个强退的 App——外圈绕着一圈旋转的 BorderBeam 流光。
+
+<img src="assets/hud.png" alt="关机 HUD：正在等 pi 和 claude 退出，devin 已退出，正在强退 Chrome 和 iTerm2" width="448">
 
 Finder、后台服务和菜单栏小工具不会被强退，它们在系统关机时正常退出。
 
@@ -80,11 +85,11 @@ Finder、后台服务和菜单栏小工具不会被强退，它们在系统关�
 ```bash
 git clone https://github.com/ZephyrDeng/one-shutdown.git
 cd one-shutdown
-./build.sh                 # → build/OneShutdown.app（通用二进制，macOS 13+）
+./build.sh                 # → build/OneShutdown.app（通用二进制，macOS 14+）
 open build/OneShutdown.app
 ```
 
-整个 App 只有 [38 行 Swift](Sources/main.swift)，运行前可以先读一遍。
+App 本体是 [287 行 Swift](Sources/main.swift)，光束动画来自内置的 [BorderBeamKit](Packages/BorderBeamKit/) 包（SwiftUI + Metal shader）。运行前可以先读一遍。
 
 ## 想法与贡献
 
@@ -93,6 +98,7 @@ open build/OneShutdown.app
 - [ ] 全局快捷键
 - [ ] 重启 / 注销
 - [ ] 「这些 App 不要强退」白名单
+- [x] 等 AI agent 会话写完记录再关机（v2.0）
 
 ## License
 
