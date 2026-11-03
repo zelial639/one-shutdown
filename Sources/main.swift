@@ -90,7 +90,7 @@ final class Actions: NSObject, NSMenuDelegate {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(16)
                 .background(Color(white: 0.1).opacity(0.95), in: RoundedRectangle(cornerRadius: 10))
-                .borderBeam(.md, theme: .dark, borderRadius: 10)
+                .borderBeam(.md, theme: .dark, borderRadius: 10, brightness: 1.8) // HUD 小,默认强度看不清光束
                 .padding(4)
         }
     }
@@ -113,7 +113,8 @@ final class Actions: NSObject, NSMenuDelegate {
     private var demoTimer: Timer?
     @objc func previewHUD() {
         if hud.isVisible { hud.close(); demoTimer?.invalidate(); return }
-        phase = zh ? "正在等待 agent 正常退出(保留会话记录)…" : "Waiting for agents to exit…"
+        // 演示固定英文:截图/README 里中文太长反而看不清状态
+        phase = "Waiting for agents to exit (sessions stay resumable)…"
         agentStates = [(0, "pi", nil), (0, "claude", nil), (0, "devin", nil)]
         appNames = []
         updateHUD()
@@ -121,11 +122,11 @@ final class Actions: NSObject, NSMenuDelegate {
         demoTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { _ in
             step += 1
             if step <= 3 {
-                self.agentStates[step - 1].done = zh ? "已退出" : "exited"
-                if step == 3 { self.phase = zh ? "\n正在强退 App(剩 2 个)…" : "\nForce-quitting apps (2 left)…"; self.appNames = ["Chrome", "iTerm2"] }
+                self.agentStates[step - 1].done = "exited"
+                if step == 3 { self.phase = "\nForce-quitting apps (2 left)…"; self.appNames = ["Chrome", "iTerm2"] }
             } else if step == 4 {
                 self.appNames = ["iTerm2"]
-                self.phase = zh ? "\n正在强退 App(剩 1 个)…" : "\nForce-quitting apps (1 left)…"
+                self.phase = "\nForce-quitting apps (1 left)…"
             } else {
                 self.hud.close(); self.demoTimer?.invalidate()
             }

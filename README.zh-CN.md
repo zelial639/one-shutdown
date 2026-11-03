@@ -15,7 +15,7 @@
 
 [English](README.md) · 简体中文
 
-<img src="assets/hero.svg" alt="之前：终端、文本编辑、Chrome 的确认弹窗拦住关机；之后：菜单栏点一下，直接关机" width="100%">
+<img src="assets/hud.png" alt="关机实时 HUD：正在等 pi 和 claude 退出，devin 已退出，正在强退 Chrome 和 iTerm2，外圈绕着旋转的 BorderBeam 流光" width="448">
 
 </div>
 
@@ -46,19 +46,18 @@
 
 点菜单栏 <kbd>⏻</kbd> → **立即关机**，就这样。
 
-1. 还在运行的 AI agent（Claude、Codex、pi、devin、cursor-agent……）先收到 **SIGTERM** 正常退出——会话记录写完落盘，下次才能 resume，而不是留下半截历史。
-2. **强制退出**所有普通 App（在 Dock 里有图标的那些），不给它们弹窗的机会。
-3. 1 秒后走系统正常关机流程。
+1. **先收 agent。** 还在运行的 AI harness（Claude、Codex、pi、devin、cursor-agent、opencode……）收到 `SIGTERM`，最多 5 秒把会话记录写完落盘——下次 `--resume` 接着跑，而不是留下半截历史。
+2. **再强退 App。** 所有普通 App（Dock 里有图标的）被强制退出，不给「是否保存」弹窗的机会。
+3. **正常关机。** 走 macOS 标准关机流程。
 
-菜单第一行会显示当前还有几个 agent 会话在跑。确认后屏幕中央会弹出 HUD 实时跟踪关机进度——每个 agent 的正常退出、逐个强退的 App——外圈绕着一圈旋转的 BorderBeam 流光。
-
-<img src="assets/hud.png" alt="关机 HUD：正在等 pi 和 claude 退出，devin 已退出，正在强退 Chrome 和 iTerm2" width="448">
+菜单第一行实时显示还有几个 agent 会话在跑；确认后屏幕中央弹出 HUD，逐个跟踪 agent 的退出和 App 的强退，外圈绕着一圈旋转的 [BorderBeam](https://github.com/xxvzzczxxl/border-beam) 流光。按住 ⌥ 点菜单栏图标可以看演示。
 
 Finder、后台服务和菜单栏小工具不会被强退，它们在系统关机时正常退出。
 
 |  | 菜单 → 关机 | `sudo shutdown -h now` | **OneShutdown** |
 |---|:---:|:---:|:---:|
 | 会被 App 弹窗拦住 | ❌ 会 | ✅ 不会 | ✅ 不会 |
+| AI agent 会话可 resume | ❌ 写到一半被杀 | ❌ 写到一半被杀 | ✅ SIGTERM + 宽限 |
 | 需要开终端 + 输管理员密码 | ✅ 不需要 | ❌ 需要 | ✅ 不需要 |
 | 操作步骤 | 点 2 下，每个弹窗再点一下 | 开终端、敲命令、输密码 | **点 1 下** |
 
@@ -89,7 +88,7 @@ cd one-shutdown
 open build/OneShutdown.app
 ```
 
-App 本体是 [287 行 Swift](Sources/main.swift)，光束动画来自内置的 [BorderBeamKit](Packages/BorderBeamKit/) 包（SwiftUI + Metal shader）。运行前可以先读一遍。
+App 本体是 [287 行 Swift](Sources/main.swift)，光束动画来自内置的 [BorderBeamKit](Packages/BorderBeamKit/) 包（SwiftUI + Metal shader，移植自 border-beam 网页库）。运行前可以先读一遍。
 
 ## 想法与贡献
 

@@ -15,7 +15,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-<img src="assets/hero.svg" alt="Before: Terminal, TextEdit and Chrome dialogs block shutdown. After: one click on the menu bar and the Mac is off." width="100%">
+<img src="assets/hud.png" alt="Live shutdown HUD: waiting for pi and claude to exit, devin exited, force-quitting Chrome and iTerm2 — ringed by a rotating BorderBeam glow" width="448">
 
 </div>
 
@@ -46,19 +46,18 @@ If you mostly put your Mac to sleep, or you rely on those *"Save changes?"* prom
 
 Click the <kbd>⏻</kbd> icon in the menu bar → **Shut Down Now**. That's it.
 
-1. AI agents still running (Claude, Codex, pi, devin, cursor-agent, …) get a **SIGTERM** first — they flush their session logs, so you can resume them next time instead of finding a truncated history.
-2. Every regular app (anything with a Dock icon) is **force-quit**, so no app gets a chance to ask a question.
-3. One second later, macOS shuts down normally.
+1. **Agents first.** Still-running AI harnesses (Claude, Codex, pi, devin, cursor-agent, opencode, …) get a `SIGTERM` and up to 5 s to flush their session logs — so `--resume` works later instead of returning truncated history.
+2. **Then apps.** Every regular app (anything with a Dock icon) is force-quit, so no "Save changes?" dialog gets a chance.
+3. **Then shutdown.** macOS shuts down normally.
 
-The status menu shows how many agent sessions are running before you commit. Once you confirm, a center-screen HUD tracks the shutdown live — each agent's graceful exit, then the apps being force-quit — ringed by a rotating [BorderBeam](https://github.com/xxvzzczxxl/border-beam) glow.
-
-<img src="assets/hud.png" alt="Shutdown HUD: waiting for pi and claude to exit, devin already exited, force-quitting Chrome and iTerm2" width="448">
+The menu shows a live agent count before you commit; on confirm, a center-screen HUD tracks each agent's exit and every force-quit, ringed by a rotating [BorderBeam](https://github.com/xxvzzczxxl/border-beam) glow. ⌥-click the icon for a demo.
 
 Finder, background services and menu-bar utilities are left alone and quit as part of the regular shutdown.
 
 |  | Apple menu → Shut Down | `sudo shutdown -h now` | **OneShutdown** |
 |---|:---:|:---:|:---:|
 | Apps can cancel it with dialogs | ❌ yes | ✅ no | ✅ no |
+| AI agent sessions kept resumable | ❌ killed mid-write | ❌ killed mid-write | ✅ SIGTERM + grace |
 | Needs Terminal + admin password | ✅ no | ❌ yes | ✅ no |
 | Steps | 2 clicks + 1 per dialog | open Terminal, type, password | **1 click** |
 
@@ -80,7 +79,7 @@ Click **Allow**. OneShutdown asks System Events to shut down the Mac, the same w
 
 ## Build from source
 
-No Xcode project and no dependencies, just the `swiftc` that ships with the Command Line Tools:
+No Xcode project — `swiftc` for the app, `swift build` for the vendored beam package:
 
 ```bash
 git clone https://github.com/ZephyrDeng/one-shutdown.git
@@ -89,7 +88,7 @@ cd one-shutdown
 open build/OneShutdown.app
 ```
 
-The app itself is [287 lines of Swift](Sources/main.swift); the beam animation comes from the vendored [BorderBeamKit](Packages/BorderBeamKit/) package (SwiftUI + Metal shaders). Read it before you run it.
+The app itself is [287 lines of Swift](Sources/main.swift); the beam animation comes from the vendored [BorderBeamKit](Packages/BorderBeamKit/) package (SwiftUI + Metal shaders, ported from the border-beam web library). Read it before you run it.
 
 ## Ideas & contributing
 
